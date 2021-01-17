@@ -5,7 +5,7 @@ class FamilyTree {
       if (!value || typeof value !== 'string') {
         throw 'error: invalid input';
       }
-      
+      this.generation = null;
       this.value = value;
       this.children = [];
   }
@@ -22,6 +22,11 @@ class FamilyTree {
   findMember(value) {
       let node = undefined;
 
+      if (value === this.value) {
+        node = this;
+        return node;
+      }
+
       //iterate through children
       for (let i in this.children) {
 
@@ -34,6 +39,8 @@ class FamilyTree {
               node = this.children[i].findMember(value);
           }
       }
+
+      
       return node;
   }
 
@@ -42,8 +49,6 @@ class FamilyTree {
 
     //calls a recursive function that will add everybody
     inner(this);
-
-    //console.log(`Output:\n${output.substring(0,output.length - 1)}`);
     return output.substring(0,output.length - 1);
   }
 }
@@ -70,29 +75,59 @@ function inner(member) {
   return output;
 }
 
+//<<---------------HTML BELOW------------------->>
+let counter = 0;
+let progenitor;
+let g2counter = 0;
+let g3counter = 0;
 
+let enterSubmitBtn = document.getElementById('submitBtn');
+enterSubmitBtn.addEventListener('click', function() {
+    let parent = document.getElementById('enterParent').value;
+    let nameChild = document.getElementById('enterName').value;
+    document.getElementById('enterParent').value = '';
+    document.getElementById('enterName').value = '';
+    console.log(parent);
+    console.log(nameChild);
 
-const szwajkowskis = new FamilyTree('Pop');
+    //if first time clicking
+    if (counter === 0) {
+        progenitor = new FamilyTree(nameChild);
+        progenitor.generation = 1;
+        document.getElementById('g1-info1').innerHTML = progenitor.value;
 
-szwajkowskis.insert('Mike');
-szwajkowskis.insert('Amy');
-szwajkowskis.insert('Todd');
+    //if we have progenitor
+    } else {
 
-const mikesFamily = szwajkowskis.findMember('Mike');
-mikesFamily.insert('Eliot');
-mikesFamily.insert('Elise');
-mikesFamily.insert('Cas');
-mikesFamily.insert('George');
-mikesFamily.insert('Lear');
+        //if parent is progenitor
+        if (parent === progenitor.value) {
+            progenitor.insert(nameChild);
+            let newMember = progenitor.findMember(nameChild)
+            newMember.generation = 2;
+            g2counter++;
+            document.getElementById(`g2-info${g2counter}`).innerHTML = newMember.value;
+        } else {
 
-const amysFamily = szwajkowskis.findMember('Amy');
-amysFamily.insert('Henry');
-amysFamily.insert('Vivian');
+          //if parent is a child of the progenitor
+            let parentIsInTree = false;
+            progenitor.children.forEach(child => {
+              if (child.value === parent) {
+                parentIsInTree = true;
+              }
+            })
 
+            if (parentIsInTree === true) {
+                let thisParent = progenitor.findMember(parent);
+                thisParent.insert(nameChild);
+                let newMember = progenitor.findMember(nameChild);
+                newMember.generation = 3;
+                g3counter++;
+                document.getElementById(`g3-info${g3counter}`).innerHTML = newMember.value;
+            }
+        }
+      }
 
+    counter++;
+})
 
-const log = szwajkowskis.log();
-
-console.log(log);
-
-module.exports = FamilyTree;
+//module.exports = FamilyTree;
